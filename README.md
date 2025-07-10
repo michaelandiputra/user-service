@@ -1,7 +1,7 @@
-User Service for Personalized Learning Platform
+# User Service for Personalized Learning Platform
 This repository contains the source code for the User Service, a core component of the personalized online learning platform. This microservice is responsible for handling all user-related functionalities, including registration, login, and profile management.
 
-Features
+# Features
 User Registration: Securely register new users with hashed passwords.
 
 User Login: Authenticate users and provide them with a JSON Web Token (JWT).
@@ -10,17 +10,17 @@ Protected Routes: Middleware to protect specific endpoints, ensuring only authen
 
 Automated Testing: A full suite of tests using Jest and Supertest to ensure reliability.
 
-Getting Started
+# Getting Started
 Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
-Prerequisites
+# Prerequisites
 Node.js (v18.x or later recommended)
 
 MongoDB (either a local instance or a cloud-based instance like MongoDB Atlas)
 
 npm (comes bundled with Node.js)
 
-Installation
+# Installation
 Clone the repository:
 
 git clone https://github.com/michaelandiputra/user-service
@@ -43,10 +43,10 @@ PORT=3001
 MONGO_URI="mongodb+srv://user:password@cluster.mongodb.net/database?retryWrites=true&w=majority"
 
 # A strong, secret key for signing JWTs
-# Generate one with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+Generate one with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 JWT_SECRET="your_super_secret_key_here"
 
-Running the Application
+# Running the Application
 Development Mode
 To run the server in development mode with nodemon (which automatically restarts on file changes):
 
@@ -54,15 +54,15 @@ npm run dev
 
 The server will be available at http://localhost:3001.
 
-Running Tests
+# Running Tests
 To run the automated tests for the API endpoints:
 
 npm test
 
-API Endpoints
+# API Endpoints
 The following endpoints are available:
 
-POST /api/users/register
+## POST /api/users/register
 Registers a new user.
 
 Body (raw/json):
@@ -77,7 +77,7 @@ Success Response (201 Created): Returns the user object and a JWT.
 
 Failure Response (400 Bad Request): If email already exists or data is invalid.
 
-POST /api/users/login
+## POST /api/users/login
 Logs in an existing user.
 
 Body (raw/json):
@@ -91,7 +91,7 @@ Success Response (200 OK): Returns the user object and a JWT.
 
 Failure Response (401 Unauthorized): If email or password is incorrect.
 
-GET /api/users/profile
+## GET /api/users/profile
 Retrieves the profile of the currently authenticated user.
 
 Authorization: This is a protected route. You must provide the JWT in the Authorization header.
