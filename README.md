@@ -116,3 +116,18 @@ Body (raw/json): You can include any of the fields you want to update.
 }
 
 Success Response (200 OK): Returns the updated user object (without the password).
+
+## PUT /api/users/profile
+Updates the profile of the currently authenticated user.
+
+Authorization: This is a protected route. You must provide the JWT in the Authorization header.
+
+Body (raw/json): You can include any of the fields you want to update.
+
+{
+  "username": "new_username",
+  "email": "new_email@example.com",
+  "password": "new_strong_password"
+}
+
+Success Response (200 OK): Returns the updated user object (without the password).
