@@ -1,0 +1,8 @@
+# Dependencies
+node_modules/
+
+# Environment variables file
+.env
+
+# Jest config
+jest.config.js
