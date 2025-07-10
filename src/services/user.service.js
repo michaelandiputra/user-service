@@ -12,25 +12,14 @@ const generateToken = (id) => {
 
 /**
  * Register a new user
- * @param {object} userData - The user data from the controller
- * @returns {object} The new user and token
  */
 export const registerUser = async (userData) => {
   const { username, email, password } = userData;
-
-  // Check if user already exists
   const userExists = await User.findOne({ email });
   if (userExists) {
     throw new AppError('User with this email already exists', 400);
   }
-
-  // Create new user
-  const user = await User.create({
-    username,
-    email,
-    password,
-  });
-
+  const user = await User.create({ username, email, password });
   if (user) {
     return {
       _id: user._id,
@@ -45,16 +34,10 @@ export const registerUser = async (userData) => {
 
 /**
  * Authenticate a user and get a token
- * @param {object} userData - The user login data
- * @returns {object} The user and token
  */
 export const loginUser = async (userData) => {
     const { email, password } = userData;
-
-    // Check if user exists
     const user = await User.findOne({ email });
-
-    // Check if user exists and password is correct
     if (user && (await user.comparePassword(password))) {
         return {
             _id: user._id,
@@ -65,4 +48,35 @@ export const loginUser = async (userData) => {
     } else {
         throw new AppError('Invalid email or password', 401);
     }
+};
+
+/**
+ * Update user profile
+ * @param {string} userId - The ID of the user to update
+ * @param {object} updateData - The data to update
+ * @returns {object} The updated user object
+ */
+export const updateUserProfile = async (userId, updateData) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
+
+  // Update username and email if provided
+  user.username = updateData.username || user.username;
+  user.email = updateData.email || user.email;
+
+  // Update password if provided
+  if (updateData.password) {
+    user.password = updateData.password;
+  }
+
+  const updatedUser = await user.save();
+
+  return {
+    _id: updatedUser._id,
+    username: updatedUser.username,
+    email: updatedUser.email,
+  };
 };

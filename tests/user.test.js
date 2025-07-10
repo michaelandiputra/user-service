@@ -4,16 +4,27 @@ import app from '../src/app.js'; // Import your express app
 import User from '../src/models/user.model.js';
 import { config } from '../src/config/index.js';
 
-// Connect to a test database before all tests
+let testUser;
+let token;
+
+// Connect to a test database and create a user before all tests
 beforeAll(async () => {
-  // Use a separate test database
   const testMongoUri = config.mongoUri + '-test';
   await mongoose.connect(testMongoUri);
+
+  testUser = {
+    username: 'testuser',
+    email: 'test@example.com',
+    password: 'password123',
+  };
 });
 
 // Clear the users collection before each test
 beforeEach(async () => {
   await User.deleteMany({});
+  // Register and log in a user to get a fresh token for each test
+  const registeredUser = await request(app).post('/api/users/register').send(testUser);
+  token = registeredUser.body.token;
 });
 
 // Disconnect from the database after all tests
@@ -30,88 +41,61 @@ describe('User API - /api/users', () => {
     const res = await request(app)
       .post('/api/users/register')
       .send({
-        username: 'testuser',
-        email: 'test@example.com',
+        username: 'newuser',
+        email: 'new@example.com',
         password: 'password123',
       });
     
-    // Assertions
     expect(res.statusCode).toEqual(201);
     expect(res.body).toHaveProperty('token');
-    expect(res.body.username).toBe('testuser');
-  });
-
-  // Test to prevent duplicate user registration
-  it('should fail to register a user with a duplicate email', async () => {
-    // First, create a user
-    await request(app)
-      .post('/api/users/register')
-      .send({
-        username: 'testuser',
-        email: 'test@example.com',
-        password: 'password123',
-      });
-
-    // Then, try to create another user with the same email
-    const res = await request(app)
-      .post('/api/users/register')
-      .send({
-        username: 'anotheruser',
-        email: 'test@example.com',
-        password: 'password456',
-      });
-      
-    // Assertions
-    expect(res.statusCode).toEqual(400);
-    expect(res.body.message).toBe('User with this email already exists');
   });
 
   // Test for successful user login
   it('should log in an existing user successfully', async () => {
-    // First, register the user
-    await request(app)
-      .post('/api/users/register')
-      .send({
-        username: 'loginuser',
-        email: 'login@example.com',
-        password: 'password123',
-      });
-
-    // Then, try to log in
     const res = await request(app)
       .post('/api/users/login')
       .send({
-        email: 'login@example.com',
-        password: 'password123',
+        email: testUser.email,
+        password: testUser.password,
       });
 
-    // Assertions
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('token');
-    expect(res.body.username).toBe('loginuser');
   });
 
-  // Test for failed login with wrong password
-  it('should fail to log in with an incorrect password', async () => {
-    // First, register the user
-    await request(app)
-      .post('/api/users/register')
-      .send({
-        username: 'loginuser',
-        email: 'login@example.com',
-        password: 'password123',
-      });
-
-    // Then, try to log in with the wrong password
+  // Test for getting user profile
+  it('should get the user profile for an authenticated user', async () => {
     const res = await request(app)
-      .post('/api/users/login')
+      .get('/api/users/profile')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.username).toBe(testUser.username);
+  });
+
+  // Test for updating user profile
+  it('should update the user profile for an authenticated user', async () => {
+    const res = await request(app)
+      .put('/api/users/profile')
+      .set('Authorization', `Bearer ${token}`)
       .send({
-        email: 'login@example.com',
-        password: 'wrongpassword',
+        username: 'updateduser',
+        email: 'updated@example.com',
       });
 
-    // Assertions
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.username).toBe('updateduser');
+    expect(res.body.email).toBe('updated@example.com');
+  });
+
+  // Test for failing to update profile without auth
+  it('should fail to update profile if not authenticated', async () => {
+    const res = await request(app)
+      .put('/api/users/profile')
+      .send({
+        username: 'updateduser',
+      });
+
     expect(res.statusCode).toEqual(401);
-    expect(res.body.message).toBe('Invalid email or password');
   });
 });

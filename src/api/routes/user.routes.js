@@ -7,7 +7,9 @@ const router = express.Router();
 router.post('/register', userController.register);
 router.post('/login', userController.login);
 
-// This is a protected route. You must provide a valid token to access it.
-router.get('/profile', protect, userController.getProfile);
+// Protected routes for profile
+router.route('/profile')
+  .get(protect, userController.getProfile)
+  .put(protect, userController.updateProfile);
 
 export default router;
